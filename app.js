@@ -5,6 +5,8 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var moment = require('moment');
+
 // mongoose init
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://rosy:password@ds159507.mlab.com:59507/insubria_aps');
@@ -18,6 +20,7 @@ var fs = require('fs');
 var readline = require('readline');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
+var dataToPost;
 
 // Sopes definition
 var SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
@@ -138,19 +141,20 @@ function listStamps(auth) {
         });
 }
 
-function postStamp(authClient, dataToWrite) {
+
+function postStamp(authClient) {
     var sheets = google.sheets('v4');
     sheets.spreadsheets.values.append({
         auth: authClient,
         spreadsheetId: '1O9qCXZ5KWq2KEPjE-3Tz1SIxy-B8_3iqIgn-udAFMyI',
-        range: 'TimbratureScaricate!A2:D',
+        range: 'TimbratureScaricate!A2:E',
         valueInputOption: 'USER_ENTERED',
         insertDataOption: 'INSERT_ROWS',
         resource: {
-            range: 'TimbratureScaricate!A2:D',
+            range: 'TimbratureScaricate!A2:E',
             majorDimension: "ROWS",
             values: [
-                ["10/10/2017", "3", "Entrata", "Test"]
+                [dataToPost._id, dataToPost.badge, '',moment(dataToPost.entertime).format('D/M/YYYY hh.mm.ss'),moment(dataToPost.exittime).format('D/M/YYYY hh.mm.ss')]
             ]
         }
     }, function (err, response) {
@@ -240,6 +244,8 @@ router.route('/exit')
             shiftPost = shiftPost[0];
             shiftPost.exittime = new Date(Date.now());
             console.log(shiftPost);
+            dataToPost = shiftPost;
+            console.log(moment(dataToPost.entertime).format('D/M/YYYY hh.mm.ss'));
             shiftPost.save(function (err) {
                 if (err)
                     throw err;
