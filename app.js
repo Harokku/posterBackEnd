@@ -194,6 +194,12 @@ router.use(function (req, res, next) {
     // log to console that a client connected
     console.log('Requested a shift route');
     next();
+});
+
+router.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin","*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
 })
 
 // demo route to check endpoint status
@@ -221,6 +227,9 @@ router.route('/enter')
 router.route('/exit')
     .post(function (req, res) {
         // set today and tomorrow date to check for already present stamp
+        var yesterday = new Date(Date.now());
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(0,0,0,0);
         var today = new Date(Date.now());
         today.setHours(0,0,0,0);
         var tomorrow = new Date(Date.now());
@@ -231,12 +240,14 @@ router.route('/exit')
          *  if TRUE: mark the exit
          *  if FALSE: drop the request
          */
-        // TODO: Implement a response informing the user that time mark went wrong.
-        Shift.find({ badge: req.body.badge, entertime: {"$gte": today, "$lt": tomorrow }}).sort({ 'entertime': -1 }).limit(1).exec(function (err, shiftPost) {
+        // TODO: Implement a filter to check if exittime is empty.
+        Shift.find({ badge: req.body.badge, entertime: {"$gte": yesterday, "$lt": tomorrow }, exittime: { $exists: false} }).sort({ 'entertime': -1 }).limit(1).exec(function (err, shiftPost) {
             if (err)
                 throw err;
 
-            if (!shiftPost) {
+            console.log(shiftPost[0]);
+            console.log(typeof shiftPost[0]);
+            if (typeof shiftPost[0] === 'undefined') {
                 res.json({message: 'No enter mark found, unable to mark the exit!'});
                 return;
             }
