@@ -154,7 +154,7 @@ function postStamp(authClient) {
             range: 'TimbratureScaricate!A2:E',
             majorDimension: "ROWS",
             values: [
-                [dataToPost._id, dataToPost.badge, '',moment(dataToPost.entertime).format('D/M/YYYY hh.mm.ss'),moment(dataToPost.exittime).format('D/M/YYYY hh.mm.ss')]
+                [dataToPost._id, dataToPost.badge, '',moment(dataToPost.entertime).format('D/M/YYYY HH.mm.ss'),moment(dataToPost.exittime).format('D/M/YYYY HH.mm.ss')]
             ]
         }
     }, function (err, response) {
@@ -256,7 +256,7 @@ router.route('/exit')
             shiftPost.exittime = new Date(Date.now());
             console.log(shiftPost);
             dataToPost = shiftPost;
-            console.log(moment(dataToPost.entertime).format('D/M/YYYY hh.mm.ss'));
+            console.log(moment(dataToPost.entertime).format('D/M/YYYY HH.mm.ss'));
             shiftPost.save(function (err) {
                 if (err)
                     throw err;
